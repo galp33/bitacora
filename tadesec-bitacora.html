@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>TADESEC · Bitácora de Seguridad</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg:        #0a0f14;
+  --surface:   #111820;
+  --surface2:  #182028;
+  --surface3:  #1e2a35;
+  --border:    #253040;
+  --accent:    #00c8ff;
+  --accent2:   #0090b8;
+  --accent-bg: rgba(0,200,255,0.07);
+  --text:      #d8e8f0;
+  --muted:     #5a7080;
+  --green:     #00e088;
+  --red:       #ff4d6a;
+  --yellow:    #ffc040;
+  --purple:    #a080ff;
+  --r:         6px;
+  --mono:      'IBM Plex Mono', monospace;
+  --sans:      'IBM Plex Sans', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  position: sticky; top: 0; z-index: 200;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 20px; height: 56px; gap: 16px;
+}
+
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--mono); font-size: 13px; font-weight: 600;
+  letter-spacing: 2px; color: var(--accent);
+  text-transform: uppercase;
+}
+
+.brand-shield {
+  width: 34px; height: 34px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent2);
+  border-radius: var(--r);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+}
+
+.topbar-right {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 10px;
+}
+
+.clock-box {
+  font-family: var(--mono); font-size: 13px;
+  color: var(--accent); background: var(--accent-bg);
+  border: 1px solid rgba(0,200,255,0.2);
+  padding: 4px 12px; border-radius: 4px;
+}
+
+.guardia-pill {
+  font-size: 12px; color: var(--muted);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 4px 12px; border-radius: 20px;
+  cursor: pointer;
+}
+
+.guardia-pill span { color: var(--text); font-weight: 500; }
+
+/* ── TABS ── */
+.tabs {
+  display: flex; gap: 2px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  overflow-x: auto;
+}
+
+.tab {
+  display: flex; align-items: center; gap: 7px;
+  padding: 12px 18px;
+  font-size: 13px; font-weight: 500;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+  cursor: pointer; white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.tab:hover { color: var(--text); }
+
+.tab.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.tab-count {
+  background: var(--surface3);
+  font-family: var(--mono);
+  font-size: 10px; font-weight: 600;
+  padding: 2px 6px; border-radius: 10px;
+  color: var(--muted);
+}
+
+.tab.active .tab-count {
+  background: var(--accent-bg);
+  color: var(--accent);
+}
+
+/* ── LAYOUT ── */
+.content { padding: 20px; max-width: 1200px; }
+
+.page { display: none; }
+.page.active { display: block; }
+
+/* ── STATS ROW ── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px; margin-bottom: 18px;
+}
+
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 16px;
+}
+
+.stat-n {
+  font-family: var(--mono);
+  font-size: 30px; font-weight: 600;
+  line-height: 1;
+}
+
+.stat-n.c-green { color: var(--green); }
+.stat-n.c-blue  { color: var(--accent); }
+.stat-n.c-red   { color: var(--red); }
+.stat-n.c-purple{ color: var(--purple); }
+
+.stat-lbl {
+  font-size: 11px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.6px;
+  margin-top: 5px;
+}
+
+/* ── CARD ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  margin-bottom: 14px;
+}
+
+.card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.8px;
+  color: var(--muted);
+}
+
+.card-body { padding: 18px; }
+
+/* ── FORM ── */
+.fg { display: grid; gap: 12px; }
+.fg-2 { grid-template-columns: repeat(2,1fr); }
+.fg-3 { grid-template-columns: repeat(3,1fr); }
+.fg-4 { grid-template-columns: repeat(4,1fr); }
+.fg-1 { grid-template-columns: 1fr; }
+.sp2 { grid-column: span 2; }
+.sp3 { grid-column: span 3; }
+.sp4 { grid-column: span 4; }
+
+.field { display: flex; flex-direction: column; gap: 5px; }
+
+.field label {
+  font-size: 11px; font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+
+input, select, textarea {
+  font-family: var(--sans);
+  font-size: 13.5px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  color: var(--text);
+  padding: 9px 12px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent);
+}
+
+select option { background: var(--surface2); }
+textarea { resize: vertical; min-height: 68px; }
+
+/* casa selector */
+.casa-wrap { position: relative; }
+.casa-input {
+  cursor: pointer;
+}
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 20px; border-radius: var(--r);
+  font-family: var(--sans); font-size: 13px; font-weight: 500;
+  border: none; cursor: pointer; transition: all 0.15s;
+}
+
+.btn-primary { background: var(--accent); color: #000; }
+.btn-primary:hover { background: #00b0e0; }
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.btn-ghost:hover { border-color: var(--text); color: var(--text); }
+.btn-success {
+  background: transparent;
+  border: 1px solid var(--green); color: var(--green);
+}
+.btn-success:hover { background: rgba(0,224,136,0.08); }
+
+.btn-row {
+  display: flex; gap: 10px; justify-content: flex-end;
+  margin-top: 14px;
+}
+
+/* ── TABLE ── */
+.tbl-wrap { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+thead th {
+  background: var(--surface2);
+  padding: 9px 14px;
+  text-align: left;
+  font-size: 10px; font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.6px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+tbody tr { border-bottom: 1px solid var(--border); }
+tbody tr:hover { background: var(--surface2); }
+tbody td { padding: 10px 14px; vertical-align: middle; }
+
+.empty td {
+  text-align: center; color: var(--muted);
+  padding: 36px; font-size: 13px;
+}
+
+/* ── CHIPS ── */
+.chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 8px; border-radius: 20px;
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+
+.ch-entrada  { background: rgba(0,224,136,.12); color: var(--green); }
+.ch-salida   { background: rgba(255,77,106,.12); color: var(--red); }
+.ch-visita   { background: rgba(160,128,255,.12); color: var(--purple); }
+.ch-novedad  { background: rgba(255,192,64,.12);  color: var(--yellow); }
+.ch-ronda    { background: rgba(0,200,255,.12);   color: var(--accent); }
+.ch-grave    { background: rgba(255,77,106,.15); color: var(--red); }
+.ch-leve     { background: rgba(255,192,64,.15); color: var(--yellow); }
+.ch-info     { background: rgba(0,200,255,.15);  color: var(--accent); }
+.ch-adm      { background: rgba(160,128,255,.15); color: var(--purple); }
+
+/* ── MONO TEXT ── */
+.mono { font-family: var(--mono); font-size: 12px; }
+
+/* ── MODAL TURNO ── */
+.modal-bg {
+  position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,.75);
+  display: flex; align-items: center; justify-content: center;
+}
+
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 28px; width: 440px; max-width: 95vw;
+}
+
+.modal-title {
+  font-family: var(--mono);
+  font-size: 14px; font-weight: 600;
+  color: var(--accent); letter-spacing: 1px;
+  text-transform: uppercase; margin-bottom: 20px;
+}
+
+/* ── REPORT ── */
+.report-box {
+  font-family: var(--mono); font-size: 12px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 18px;
+  white-space: pre-wrap; line-height: 1.7;
+  max-height: 420px; overflow-y: auto;
+  color: var(--muted);
+}
+
+/* ── TOAST ── */
+.toast {
+  position: fixed; bottom: 20px; right: 20px; z-index: 999;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--green);
+  border-radius: var(--r);
+  padding: 11px 16px; font-size: 13px;
+  animation: toastIn .25s ease;
+  max-width: 300px;
+}
+
+@keyframes toastIn {
+  from { transform: translateX(110%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+/* ── UNIDAD SELECTOR DESTACADO ── */
+.unidad-banner {
+  background: var(--accent-bg);
+  border: 2px solid var(--accent);
+  border-radius: var(--r);
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.unidad-banner-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.unidad-banner select {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface2);
+  border: 1px solid var(--accent2);
+  border-radius: var(--r);
+  padding: 10px 14px;
+}
+
+.unidad-banner select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(0,200,255,0.15);
+}
+
+.unidad-icon {
+  font-size: 22px;
+}
+
+/* ── LIVE BADGE ── */
+.live {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--green);
+}
+
+.live-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--green);
+  animation: blink 2s infinite;
+}
+
+@keyframes blink {
+  0%,100% { opacity: 1; }
+  50%      { opacity: .3; }
+}
+
+/* ── RESPONSIVE ── */
+@media(max-width: 700px) {
+  .stats-row { grid-template-columns: repeat(2,1fr); }
+  .fg-3, .fg-4 { grid-template-columns: 1fr 1fr; }
+  .fg-2 { grid-template-columns: 1fr; }
+  .sp2,.sp3,.sp4 { grid-column: span 1; }
+  .content { padding: 12px; }
+}
+
+/* ── PIN DOTS ── */
+.pin-dot {
+  width:14px;height:14px;border-radius:50%;
+  border:2px solid var(--border);background:transparent;transition:all 0.15s;
+}
+.pin-dot.filled { background:var(--accent);border-color:var(--accent);box-shadow:0 0 8px rgba(0,200,255,0.4); }
+
+/* ── NUMPAD ── */
+.numpad-btn {
+  background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);
+  color:var(--text);font-family:var(--mono);font-size:20px;font-weight:500;
+  padding:14px;cursor:pointer;text-align:center;transition:all 0.12s;user-select:none;
+}
+.numpad-btn:hover { background:var(--surface3);border-color:var(--accent2); }
+.numpad-btn:active { transform:scale(0.95); }
+
+/* ── TOAST ERR ── */
+.toast.err { border-left-color:var(--red); }
+
+/* ── ADMIN ── */
+.admin-guard-row {
+  display:flex;align-items:center;gap:12px;
+  padding:12px 0;border-bottom:1px solid var(--border);
+}
+.admin-guard-row:last-child { border-bottom:none; }
+.admin-guard-name { flex:1;font-weight:500; }
+.admin-guard-role { font-size:12px;color:var(--muted); }
+.log-entry { display:flex;gap:16px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px; }
+.log-entry:last-child { border-bottom:none; }
+.log-time { font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;min-width:150px; }
+.ch-activo   { background:rgba(0,224,136,.15);color:var(--green); }
+.ch-inactivo { background:rgba(255,77,106,.15);color:var(--red); }
+.btn-danger { background:transparent;border:1px solid var(--red);color:var(--red);font-size:12px;padding:5px 10px; }
+.btn-danger:hover { background:rgba(255,77,106,0.1); }
+.btn-sm { padding:5px 12px;font-size:12px; }
+.btn-cerrar { font-size:12px;color:var(--red);background:rgba(255,77,106,0.08);border:1px solid rgba(255,77,106,0.25);padding:4px 12px;border-radius:20px;cursor:pointer;font-family:var(--sans);transition:all 0.15s; }
+.btn-cerrar:hover { background:rgba(255,77,106,0.15); }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="screen-login" style="position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:center;justify-content:center;">
+  <div style="width:400px;max-width:95vw;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:36px 32px;">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="font-size:44px;">🛡</div>
+      <div style="font-family:var(--mono);font-size:18px;font-weight:600;color:var(--accent);letter-spacing:2px;text-transform:uppercase;margin-top:8px;">TADESEC</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:4px;">Sistema de Bitácora · Acceso Autorizado</div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);margin-bottom:6px;">Selecciona tu nombre</label>
+      <select id="login-guardia" style="width:100%;font-size:14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:11px 14px;outline:none;font-family:var(--sans);">
+        <option value="">— Selecciona —</option>
+      </select>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);margin-bottom:6px;">Turno</label>
+      <select id="login-turno" style="width:100%;font-size:14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:11px 14px;outline:none;font-family:var(--sans);">
+        <option>Diurno (06:00 – 18:00)</option>
+        <option>Nocturno (18:00 – 06:00)</option>
+        <option>Especial</option>
+      </select>
+    </div>
+    <div style="margin-bottom:10px;">
+      <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);margin-bottom:10px;">PIN de acceso</label>
+      <div style="display:flex;gap:10px;justify-content:center;margin-bottom:16px;" id="pin-display">
+        <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+        <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+        <div class="pin-dot" id="pd4"></div><div class="pin-dot" id="pd5"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;">
+        <button class="numpad-btn" onclick="pinKey('1')">1</button>
+        <button class="numpad-btn" onclick="pinKey('2')">2</button>
+        <button class="numpad-btn" onclick="pinKey('3')">3</button>
+        <button class="numpad-btn" onclick="pinKey('4')">4</button>
+        <button class="numpad-btn" onclick="pinKey('5')">5</button>
+        <button class="numpad-btn" onclick="pinKey('6')">6</button>
+        <button class="numpad-btn" onclick="pinKey('7')">7</button>
+        <button class="numpad-btn" onclick="pinKey('8')">8</button>
+        <button class="numpad-btn" onclick="pinKey('9')">9</button>
+        <button class="numpad-btn" onclick="pinDel()" style="color:var(--muted);font-size:16px;">⌫</button>
+        <button class="numpad-btn" onclick="pinKey('0')">0</button>
+        <button class="numpad-btn" onclick="pinClear()" style="color:var(--muted);font-size:16px;">✕</button>
+      </div>
+    </div>
+    <div id="login-error" style="display:none;background:rgba(255,77,106,0.1);border:1px solid rgba(255,77,106,0.3);border-radius:var(--r);color:var(--red);font-size:13px;text-align:center;padding:10px;margin-bottom:12px;"></div>
+    <button onclick="intentarLogin()" style="width:100%;background:var(--accent);color:#000;border:none;border-radius:var(--r);font-family:var(--sans);font-size:14px;font-weight:600;padding:12px;cursor:pointer;">Ingresar al sistema</button>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-shield">🛡</div>
+    TADESEC
+  </div>
+  <div class="live"><div class="live-dot"></div>En línea</div>
+  <div class="topbar-right">
+    <div class="clock-box mono" id="clock">00:00:00</div>
+    <div class="guardia-pill" onclick="document.getElementById('modal-turno').style.display='flex'">
+      Guardia: <span id="hdr-guardia">—</span>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="showTab('dashboard')">📊 Dashboard</div>
+  <div class="tab" onclick="showTab('vehiculos')">🚗 Vehículos <span class="tab-count" id="tc-v">0</span></div>
+  <div class="tab" onclick="showTab('visitas')">👤 Visitas <span class="tab-count" id="tc-vis">0</span></div>
+  <div class="tab" onclick="showTab('novedades')">⚠️ Novedades <span class="tab-count" id="tc-n">0</span></div>
+  <div class="tab" onclick="showTab('rondas')">🔄 Rondas <span class="tab-count" id="tc-r">0</span></div>
+  <div class="tab" onclick="showTab('bitacora')">📋 Bitácora</div>
+  <div class="tab" onclick="showTab('reporte')">📄 Reporte</div>
+  <div class="tab" id="tab-admin-btn" style="display:none" onclick="showTab('admin')">⚙️ Admin</div>
+</div>
+
+<div class="content">
+
+  <!-- ═══ DASHBOARD ═══ -->
+  <div id="tab-dashboard" class="page active">
+    <div class="stats-row" style="margin-top:4px">
+      <div class="stat">
+        <div class="stat-n c-green" id="s-v">0</div>
+        <div class="stat-lbl">Vehículos hoy</div>
+      </div>
+      <div class="stat">
+        <div class="stat-n c-blue" id="s-vis">0</div>
+        <div class="stat-lbl">Visitas hoy</div>
+      </div>
+      <div class="stat">
+        <div class="stat-n c-red" id="s-n">0</div>
+        <div class="stat-lbl">Novedades</div>
+      </div>
+      <div class="stat">
+        <div class="stat-n c-purple" id="s-r">0</div>
+        <div class="stat-lbl">Rondas</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <span>Últimos eventos</span>
+        <span id="dash-fecha" style="font-weight:400;text-transform:none;letter-spacing:0"></span>
+      </div>
+      <div class="card-body" style="padding:0">
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Hora</th><th>Tipo</th><th>Unidad</th><th>Detalle</th><th>Guardia</th></tr></thead>
+            <tbody id="dash-table"><tr class="empty"><td colspan="5">Sin eventos registrados</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ VEHÍCULOS ═══ -->
+  <div id="tab-vehiculos" class="page">
+    <div class="card">
+      <div class="card-head">🚗 Registrar vehículo</div>
+      <div class="card-body">
+
+        <!-- UNIDAD DESTACADA -->
+        <div class="unidad-banner">
+          <span class="unidad-icon">🏠</span>
+          <span class="unidad-banner-label">Unidad / Casa</span>
+          <select id="v-casa">
+            <option value="Administración">Administración</option>
+          </select>
+        </div>
+
+        <div class="fg fg-4">
+          <div class="field">
+            <label>Evento</label>
+            <select id="v-evento">
+              <option>Entrada</option>
+              <option>Salida</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Placa</label>
+            <input type="text" id="v-placa" placeholder="ABC-1234" style="text-transform:uppercase">
+          </div>
+          <div class="field">
+            <label>Tipo vehículo</label>
+            <select id="v-tipo">
+              <option>Automóvil</option>
+              <option>Camioneta</option>
+              <option>Camión</option>
+              <option>Moto</option>
+              <option>Bus</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Hora</label>
+            <input type="time" id="v-hora">
+          </div>
+          <div class="field sp2">
+            <label>Conductor / Propietario</label>
+            <input type="text" id="v-conductor" placeholder="Nombre">
+          </div>
+          <div class="field">
+            <label>Motivo</label>
+            <select id="v-motivo">
+              <option>Residente</option>
+              <option>Visita</option>
+              <option>Proveedor</option>
+              <option>Entrega / Despacho</option>
+              <option>Servicio técnico</option>
+              <option>Mantenimiento</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Observaciones</label>
+            <input type="text" id="v-obs" placeholder="Opcional">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="regVehiculo()">+ Registrar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">Vehículos del día</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Hora</th><th>Evento</th><th>Placa</th><th>Tipo</th><th>Conductor</th><th>Unidad</th><th>Motivo</th><th>Obs.</th></tr></thead>
+          <tbody id="v-table"><tr class="empty"><td colspan="8">Sin registros</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ VISITAS ═══ -->
+  <div id="tab-visitas" class="page">
+    <div class="card">
+      <div class="card-head">👤 Registrar visita</div>
+      <div class="card-body">
+
+        <!-- UNIDAD DESTACADA -->
+        <div class="unidad-banner">
+          <span class="unidad-icon">🏠</span>
+          <span class="unidad-banner-label">Unidad / Casa</span>
+          <select id="vis-casa">
+            <option value="Administración">Administración</option>
+          </select>
+        </div>
+
+        <div class="fg fg-3">
+          <div class="field">
+            <label>Evento</label>
+            <select id="vis-evento">
+              <option>Ingreso</option>
+              <option>Salida</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Hora</label>
+            <input type="time" id="vis-hora">
+          </div>
+          <div class="field">
+            <label>Motivo</label>
+            <select id="vis-motivo">
+              <option>Visita familiar</option>
+              <option>Reunión</option>
+              <option>Entrega</option>
+              <option>Servicio técnico</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="field sp2">
+            <label>Nombre del visitante</label>
+            <input type="text" id="vis-nombre" placeholder="Nombre completo">
+          </div>
+          <div class="field">
+            <label>Cédula / ID</label>
+            <input type="text" id="vis-cedula" placeholder="Número">
+          </div>
+          <div class="field sp2">
+            <label>Empresa / Institución</label>
+            <input type="text" id="vis-empresa" placeholder="Opcional">
+          </div>
+          <div class="field">
+            <label>Artículos que ingresa</label>
+            <input type="text" id="vis-art" placeholder="Laptop, caja... (opcional)">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="regVisita()">+ Registrar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">Visitas del día</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Hora</th><th>Evento</th><th>Nombre</th><th>Cédula</th><th>Unidad</th><th>Empresa</th><th>Motivo</th></tr></thead>
+          <tbody id="vis-table"><tr class="empty"><td colspan="7">Sin registros</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ NOVEDADES ═══ -->
+  <div id="tab-novedades" class="page">
+    <div class="card">
+      <div class="card-head">⚠️ Registrar novedad</div>
+      <div class="card-body">
+
+        <!-- UNIDAD DESTACADA -->
+        <div class="unidad-banner">
+          <span class="unidad-icon">🏠</span>
+          <span class="unidad-banner-label">Unidad / Casa</span>
+          <select id="n-casa">
+            <option value="">— Sin unidad específica —</option>
+            <option value="Administración">Administración</option>
+          </select>
+        </div>
+
+        <div class="fg fg-3">
+          <div class="field">
+            <label>Categoría</label>
+            <select id="n-cat">
+              <option>Seguridad</option>
+              <option>Acceso no autorizado</option>
+              <option>Incidente personal</option>
+              <option>Avería / Falla</option>
+              <option>Infraestructura</option>
+              <option>Emergencia</option>
+              <option>Otra</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Severidad</label>
+            <select id="n-sev">
+              <option>Informativa</option>
+              <option>Leve</option>
+              <option>Grave</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Hora del evento</label>
+            <input type="time" id="n-hora">
+          </div>
+          <div class="field">
+            <label>Lugar / Área</label>
+            <input type="text" id="n-lugar" placeholder="Ej. Entrada principal, Parqueadero">
+          </div>
+          <div class="field sp2">
+            <label>Personas involucradas</label>
+            <input type="text" id="n-personas" placeholder="Nombres (opcional)">
+          </div>
+          <div class="field sp3">
+            <label>Descripción</label>
+            <textarea id="n-desc" placeholder="Describe con claridad lo ocurrido..."></textarea>
+          </div>
+          <div class="field sp3">
+            <label>Acción tomada</label>
+            <input type="text" id="n-accion" placeholder="Ej. Se notificó a supervisor, se cerró acceso">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="regNovedad()">+ Registrar novedad</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">Novedades del día</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Hora</th><th>Categoría</th><th>Severidad</th><th>Unidad</th><th>Lugar</th><th>Descripción</th><th>Acción</th></tr></thead>
+          <tbody id="n-table"><tr class="empty"><td colspan="7">Sin novedades</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ RONDAS ═══ -->
+  <div id="tab-rondas" class="page">
+    <div class="card">
+      <div class="card-head">🔄 Registrar ronda</div>
+      <div class="card-body">
+        <div class="fg fg-3">
+          <div class="field">
+            <label>Número de ronda</label>
+            <input type="number" id="r-num" value="1" min="1">
+          </div>
+          <div class="field">
+            <label>Hora inicio</label>
+            <input type="time" id="r-inicio">
+          </div>
+          <div class="field">
+            <label>Hora fin</label>
+            <input type="time" id="r-fin">
+          </div>
+          <div class="field sp3">
+            <label>Áreas / Sectores recorridos</label>
+            <input type="text" id="r-areas" placeholder="Ej. Perímetro norte, Parqueadero, Casas 001-050">
+          </div>
+          <div class="field">
+            <label>Estado</label>
+            <select id="r-estado">
+              <option>Sin novedades</option>
+              <option>Con novedad registrada</option>
+            </select>
+          </div>
+          <div class="field sp2">
+            <label>Observaciones</label>
+            <input type="text" id="r-obs" placeholder="Opcional">
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="regRonda()">+ Registrar ronda</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">Rondas del día</div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Inicio</th><th>Fin</th><th>Áreas</th><th>Estado</th><th>Obs.</th></tr></thead>
+          <tbody id="r-table"><tr class="empty"><td colspan="6">Sin rondas</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ BITÁCORA ═══ -->
+  <div id="tab-bitacora" class="page">
+    <div class="card">
+      <div class="card-head">
+        <span>Línea de tiempo — todos los eventos del día</span>
+        <button class="btn btn-ghost" style="padding:4px 12px;font-size:12px" onclick="renderBitacora()">↺ Actualizar</button>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Hora</th><th>Tipo</th><th>Unidad</th><th>Detalle</th><th>Guardia</th></tr></thead>
+          <tbody id="bit-table"><tr class="empty"><td colspan="5">Sin eventos del día</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ REPORTE ═══ -->
+  <div id="tab-reporte" class="page">
+    <div class="card">
+      <div class="card-head">⚙️ Cierre de turno</div>
+      <div class="card-body">
+        <div class="fg fg-2">
+          <div class="field">
+            <label>Guardia que firma</label>
+            <input type="text" id="rep-firma" placeholder="Nombre">
+          </div>
+          <div class="field">
+            <label>Supervisor / Jefe</label>
+            <input type="text" id="rep-sup" placeholder="Nombre">
+          </div>
+          <div class="field sp2">
+            <label>Observaciones de cierre</label>
+            <textarea id="rep-cierre" placeholder="Estado general al cierre, pendientes, recomendaciones..."></textarea>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-ghost" onclick="preview()">👁 Vista previa</button>
+          <button class="btn btn-success" onclick="dlTXT()">⬇ Descargar .txt</button>
+          <button class="btn btn-primary" onclick="dlCSV()">⬇ Descargar CSV</button>
+        </div>
+      </div>
+    </div>
+    <div class="card" id="prev-card" style="display:none">
+      <div class="card-head">Vista previa</div>
+      <div class="card-body" style="padding:12px">
+        <div class="report-box" id="prev-text"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ ADMIN ═══ -->
+  <div id="tab-admin" class="page">
+    <div class="card">
+      <div class="card-head">➕ Agregar guardia</div>
+      <div class="card-body">
+        <div class="fg fg-3">
+          <div class="field"><label>Nombre completo</label>
+            <input type="text" id="adm-nombre" placeholder="Nombre y apellido"></div>
+          <div class="field"><label>PIN (4-6 dígitos)</label>
+            <input type="password" id="adm-pin" placeholder="Ej. 1234" maxlength="6" inputmode="numeric"></div>
+          <div class="field"><label>Rol</label>
+            <select id="adm-rol"><option>Guardia</option><option>Supervisor</option></select></div>
+        </div>
+        <div class="btn-row"><button class="btn btn-primary" onclick="agregarGuardia()">+ Agregar guardia</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head">👥 Guardias registrados</div>
+      <div class="card-body" id="admin-lista-guardias"><div style="color:var(--muted);font-size:13px">Sin guardias registrados.</div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span>📋 Log de accesos</span>
+        <button class="btn btn-ghost btn-sm" onclick="renderLog()">↺ Actualizar</button></div>
+      <div class="card-body" id="admin-log" style="max-height:400px;overflow-y:auto">
+        <div style="color:var(--muted);font-size:13px">Sin registros de acceso.</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<script>
+// ─── CASAS ────────────────────────────────────────────────────────────────
+const CASAS = ['Administración'];
+for(let i = 1; i <= 150; i++) CASAS.push(`Casa ${String(i).padStart(3,'0')}`);
+
+// poblar selects de casas
+['v-casa','vis-casa','n-casa'].forEach(id => {
+  const sel = document.getElementById(id);
+  if(!sel) return;
+  const tieneBlanck = id === 'n-casa';
+  CASAS.forEach((c,i) => {
+    if(i === 0 && tieneBlanck) return; // ya tiene "— General —"
+    const opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    sel.appendChild(opt);
+  });
+});
+
+// ══════════════════════════════════════════════
+// CONFIGURACIÓN BITACORA-CENTRAL
+// ══════════════════════════════════════════════
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxs_nQWiPF4AHikXa5PUK4axO6X2-P-ULFajkl5wDkhU6rSVt4L7bgnBNgLL34vyI5vUg/exec';
+const CLIENT_ID  = 'tadesec';
+let clienteVerificado = false;
+
+// Verificar cliente al entrar
+function verificarCliente(callback) {
+  const s = document.createElement('script');
+  const cb = 'cb_check_' + Date.now();
+  window[cb] = function(r) {
+    delete window[cb];
+    document.body.removeChild(s);
+    if(r.ok) { clienteVerificado = true; callback(true); }
+    else { callback(false, r.msg); }
+  };
+  s.src = SCRIPT_URL + '?callback=' + cb + '&action=check_client&client_id=' + CLIENT_ID;
+  document.body.appendChild(s);
+}
+
+// Enviar registro al servidor
+function enviarAlServidor(tipo, datos) {
+  if(!clienteVerificado) return;
+  const s = document.createElement('script');
+  const cb = 'cb_save_' + Date.now();
+  window[cb] = function(r) {
+    delete window[cb];
+    document.body.removeChild(s);
+    if(!r.ok) console.warn('Error guardando en servidor:', r.msg);
+  };
+  const params = '?callback=' + cb +
+    '&action=save' +
+    '&client_id=' + CLIENT_ID +
+    '&tipo=' + tipo +
+    '&datos=' + encodeURIComponent(JSON.stringify(datos));
+  s.src = SCRIPT_URL + params;
+  document.body.appendChild(s);
+}
+
+// GUARDIAS / LOG / ADMIN PIN
+const GUARDIAS_KEY='tadesec_guardias';
+const LOG_KEY='tadesec_log_accesos';
+const ADMIN_PIN='9999'; // ← cambia este PIN maestro
+
+function lsGet(k){try{return JSON.parse(localStorage.getItem(k));}catch{return null;}}
+function lsSet(k,v){localStorage.setItem(k,JSON.stringify(v));}
+
+// STORAGE DIARIO
+const hoy=()=>new Date().toISOString().slice(0,10);
+const DATA_KEY=()=>'tadesec_data_'+hoy();
+
+function guardar(){
+  lsSet(DATA_KEY(),{vehiculos:S.vehiculos,visitas:S.visitas,novedades:S.novedades,rondas:S.rondas});
+}
+
+function cargar(){
+  const d=lsGet(DATA_KEY());
+  if(!d)return;
+  S.vehiculos=d.vehiculos||[]; S.visitas=d.visitas||[];
+  S.novedades=d.novedades||[]; S.rondas=d.rondas||[];
+}
+
+function getGuardias(){return lsGet(GUARDIAS_KEY)||[];}
+function setGuardias(g){lsSet(GUARDIAS_KEY,g);}
+function getLog(){return lsGet(LOG_KEY)||[];}
+
+function registrarAcceso(nombre,rol,turno,accion){
+  const log=getLog();
+  log.unshift({ts:new Date().toLocaleString('es-EC',{hour12:false}),nombre,rol,turno,accion});
+  lsSet(LOG_KEY,log.slice(0,200));
+}
+
+function poblarLoginSelect(){
+  const sel=document.getElementById('login-guardia');
+  const gs=getGuardias();
+  sel.innerHTML='<option value="">— Selecciona —</option>';
+  gs.filter(g=>g.activo).forEach(g=>{
+    const o=document.createElement('option');
+    o.value=g.nombre; o.textContent=g.nombre+' ('+g.rol+')'; sel.appendChild(o);
+  });
+  const oa=document.createElement('option');
+  oa.value='__admin__'; oa.textContent='⚙ Administrador'; sel.appendChild(oa);
+}
+
+// PIN
+let pinActual='';
+function pinKey(d){if(pinActual.length>=6)return;pinActual+=d;renderPinDots();}
+function pinDel(){pinActual=pinActual.slice(0,-1);renderPinDots();}
+function pinClear(){pinActual='';renderPinDots();}
+function renderPinDots(){
+  for(let i=0;i<6;i++){
+    const dot=document.getElementById('pd'+i);
+    if(dot)dot.classList.toggle('filled',i<pinActual.length);
+  }
+}
+
+// LOGIN
+function intentarLogin(){
+  const nombre=document.getElementById('login-guardia').value;
+  const turno=document.getElementById('login-turno').value;
+  const err=document.getElementById('login-error');
+  err.style.display='none';
+  if(!nombre){err.textContent='Selecciona tu nombre';err.style.display='block';return;}
+  if(!pinActual){err.textContent='Ingresa tu PIN';err.style.display='block';return;}
+  if(nombre==='__admin__'){
+    if(pinActual!==ADMIN_PIN){err.textContent='PIN de administrador incorrecto';err.style.display='block';pinClear();return;}
+    entrarApp('Administrador','Administrador',turno);
+    document.getElementById('tab-admin-btn').style.display='flex';
+    registrarAcceso('Administrador','Administrador',turno,'Ingreso');
+    return;
+  }
+  const g=getGuardias().find(x=>x.nombre===nombre&&x.activo);
+  if(!g){err.textContent='Usuario no encontrado o inactivo';err.style.display='block';pinClear();return;}
+  if(g.pin!==pinActual){err.textContent='PIN incorrecto';err.style.display='block';pinClear();return;}
+  entrarApp(g.nombre,g.rol,turno);
+  document.getElementById('tab-admin-btn').style.display='none';
+  registrarAcceso(g.nombre,g.rol,turno,'Ingreso');
+}
+
+function entrarApp(nombre,rol,turno){
+  S.guardia=nombre; S.turno=turno;
+  // Mostrar indicador de carga
+  const err=document.getElementById('login-error');
+  err.style.display='block'; err.style.borderColor='rgba(0,200,255,0.3)';
+  err.style.background='rgba(0,200,255,0.05)'; err.style.color='var(--accent)';
+  err.textContent='Verificando acceso...';
+  verificarCliente(function(ok, msg) {
+    if(!ok) {
+      err.textContent = msg || 'Acceso denegado. Contacte al administrador.';
+      err.style.borderColor='rgba(255,77,106,0.3)';
+      err.style.background='rgba(255,77,106,0.1)';
+      err.style.color='var(--red)';
+      S.guardia='—'; S.turno='—';
+      return;
+    }
+    err.style.display='none';
+    document.getElementById('hdr-guardia').textContent=nombre+' · '+turno.split(' ')[0];
+    const rf=document.getElementById('rep-firma'); if(rf)rf.value=nombre;
+    document.getElementById('screen-login').style.display='none';
+    cargar(); renderAll();
+    toast('Bienvenido, '+nombre);
+  });
+}
+
+function cerrarSesion(){
+  if(!confirm('¿Cerrar sesión? Asegúrate de haber descargado el reporte.'))return;
+  registrarAcceso(S.guardia,'—',S.turno,'Cierre de sesión');
+  S.guardia='—'; S.turno='—'; S.vehiculos=[]; S.visitas=[]; S.novedades=[]; S.rondas=[];
+  pinClear(); poblarLoginSelect();
+  document.getElementById('screen-login').style.display='flex';
+  document.getElementById('login-guardia').value='';
+  document.getElementById('login-error').style.display='none';
+  document.getElementById('tab-admin-btn').style.display='none';
+}
+
+// ADMIN
+function agregarGuardia(){
+  const nombre=document.getElementById('adm-nombre').value.trim();
+  const pin=document.getElementById('adm-pin').value.trim();
+  const rol=document.getElementById('adm-rol').value;
+  if(!nombre){alert('Ingresa el nombre');return;}
+  if(!/^\d{4,6}$/.test(pin)){alert('PIN debe ser 4-6 dígitos numéricos');return;}
+  const gs=getGuardias();
+  if(gs.find(g=>g.nombre===nombre)){alert('Ya existe un guardia con ese nombre');return;}
+  gs.push({nombre,pin,rol,activo:true,creado:new Date().toLocaleString('es-EC')});
+  setGuardias(gs); renderAdminGuardias(); poblarLoginSelect();
+  document.getElementById('adm-nombre').value='';
+  document.getElementById('adm-pin').value='';
+  toast('Guardia "'+nombre+'" agregado');
+}
+
+function toggleGuardia(nombre){
+  const gs=getGuardias();
+  const g=gs.find(x=>x.nombre===nombre); if(!g)return;
+  g.activo=!g.activo; setGuardias(gs);
+  renderAdminGuardias(); poblarLoginSelect();
+  toast(nombre+': '+(g.activo?'activado':'desactivado'));
+}
+
+function eliminarGuardia(nombre){
+  if(!confirm('¿Eliminar a "'+nombre+'"? No se puede deshacer.'))return;
+  setGuardias(getGuardias().filter(g=>g.nombre!==nombre));
+  renderAdminGuardias(); poblarLoginSelect();
+  toast('Guardia "'+nombre+'" eliminado');
+}
+
+function renderAdminGuardias(){
+  const cont=document.getElementById('admin-lista-guardias');
+  const gs=getGuardias();
+  if(!gs.length){cont.innerHTML='<div style="color:var(--muted);font-size:13px">Sin guardias registrados.</div>';return;}
+  cont.innerHTML=gs.map(g=>`
+    <div class="admin-guard-row">
+      <div><div class="admin-guard-name">${g.nombre}</div>
+        <div class="admin-guard-role">${g.rol} · Creado: ${g.creado}</div></div>
+      <span class="chip ${g.activo?'ch-activo':'ch-inactivo'}">${g.activo?'Activo':'Inactivo'}</span>
+      <button class="btn btn-ghost btn-sm" onclick="toggleGuardia('${g.nombre}')">${g.activo?'Desactivar':'Activar'}</button>
+      <button class="btn btn-danger" onclick="eliminarGuardia('${g.nombre}')">✕ Eliminar</button>
+    </div>`).join('');
+}
+
+function renderLog(){
+  const cont=document.getElementById('admin-log');
+  const log=getLog();
+  if(!log.length){cont.innerHTML='<div style="color:var(--muted);font-size:13px">Sin registros de acceso.</div>';return;}
+  cont.innerHTML=log.map(e=>`
+    <div class="log-entry">
+      <div class="log-time">${e.ts}</div>
+      <div><strong>${e.nombre}</strong> · ${e.rol} · <span style="color:var(--muted)">${e.turno}</span> ·
+        <span style="color:${e.accion==='Ingreso'?'var(--green)':'var(--red)'}">${e.accion}</span></div>
+    </div>`).join('');
+}
+
+// STATE
+const S={guardia:'—',turno:'—',vehiculos:[],visitas:[],novedades:[],rondas:[]};
+
+// INIT
+document.addEventListener('DOMContentLoaded',()=>{
+  tick(); setInterval(tick,1000); setHoras();
+  document.getElementById('dash-fecha').textContent=
+    new Date().toLocaleDateString('es-EC',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  poblarLoginSelect();
+});
+
+function tick(){
+  document.getElementById('clock').textContent=
+    new Date().toLocaleTimeString('es-EC',{hour12:false});
+}
+
+function setHoras(){
+  const h=new Date().toTimeString().slice(0,5);
+  ['v-hora','vis-hora','n-hora','r-inicio','r-fin'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value=h;
+  });
+}
+
+// ─── TABS ─────────────────────────────────────────────────────────────────
+function showTab(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  [...document.querySelectorAll('.tab')].find(t =>
+    t.getAttribute('onclick')?.includes(`'${id}'`)
+  )?.classList.add('active');
+  if(id === 'bitacora') renderBitacora();
+}
+
+// ─── VEHÍCULOS ────────────────────────────────────────────────────────────
+function regVehiculo() {
+  const placa = document.getElementById('v-placa').value.trim().toUpperCase();
+  if(!placa) { alert('Ingresa la placa'); return; }
+  S.vehiculos.push({
+    id: Date.now(), hora: document.getElementById('v-hora').value,
+    evento: document.getElementById('v-evento').value, placa,
+    tipo: document.getElementById('v-tipo').value,
+    conductor: document.getElementById('v-conductor').value,
+    casa: document.getElementById('v-casa').value,
+    motivo: document.getElementById('v-motivo').value,
+    obs: document.getElementById('v-obs').value,
+    guardia: S.guardia
+  });
+  guardar(); renderVehiculos(); updateStats();
+  enviarAlServidor('Vehiculos', S.vehiculos[S.vehiculos.length-1]);
+  document.getElementById('v-placa').value = '';
+  document.getElementById('v-conductor').value = '';
+  document.getElementById('v-obs').value = '';
+  toast('Vehículo '+placa+' registrado');
+}
+
+function renderVehiculos() {
+  const tb = document.getElementById('v-table');
+  if(!S.vehiculos.length) { tb.innerHTML = '<tr class="empty"><td colspan="8">Sin registros</td></tr>'; return; }
+  tb.innerHTML = [...S.vehiculos].reverse().map(r => `
+    <tr>
+      <td class="mono">${r.hora}</td>
+      <td><span class="chip ${r.evento==='Entrada'?'ch-entrada':'ch-salida'}">${r.evento==='Entrada'?'▲':'▼'} ${r.evento}</span></td>
+      <td><strong>${r.placa}</strong></td>
+      <td>${r.tipo}</td>
+      <td>${r.conductor||'—'}</td>
+      <td>${r.casa}</td>
+      <td>${r.motivo}</td>
+      <td>${r.obs||'—'}</td>
+    </tr>`).join('');
+}
+
+// ─── VISITAS ──────────────────────────────────────────────────────────────
+function regVisita() {
+  const n = document.getElementById('vis-nombre').value.trim();
+  if(!n) { alert('Ingresa el nombre del visitante'); return; }
+  S.visitas.push({
+    id: Date.now(), hora: document.getElementById('vis-hora').value,
+    evento: document.getElementById('vis-evento').value,
+    casa: document.getElementById('vis-casa').value,
+    nombre: n,
+    cedula: document.getElementById('vis-cedula').value,
+    empresa: document.getElementById('vis-empresa').value,
+    motivo: document.getElementById('vis-motivo').value,
+    art: document.getElementById('vis-art').value,
+    guardia: S.guardia
+  });
+  guardar(); renderVisitas(); updateStats();
+  enviarAlServidor('Visitas', S.visitas[S.visitas.length-1]);
+  ['vis-nombre','vis-cedula','vis-empresa','vis-art'].forEach(id =>
+    document.getElementById(id).value = '');
+  toast('Visita registrada: '+n);
+}
+
+function renderVisitas() {
+  const tb = document.getElementById('vis-table');
+  if(!S.visitas.length) { tb.innerHTML = '<tr class="empty"><td colspan="7">Sin registros</td></tr>'; return; }
+  tb.innerHTML = [...S.visitas].reverse().map(r => `
+    <tr>
+      <td class="mono">${r.hora}</td>
+      <td><span class="chip ch-visita">${r.evento}</span></td>
+      <td>${r.nombre}</td>
+      <td>${r.cedula||'—'}</td>
+      <td>${r.casa}</td>
+      <td>${r.empresa||'—'}</td>
+      <td>${r.motivo}</td>
+    </tr>`).join('');
+}
+
+// ─── NOVEDADES ────────────────────────────────────────────────────────────
+function regNovedad() {
+  const desc = document.getElementById('n-desc').value.trim();
+  if(!desc) { alert('Describe la novedad'); return; }
+  const sev = document.getElementById('n-sev').value;
+  S.novedades.push({
+    id: Date.now(), hora: document.getElementById('n-hora').value,
+    cat: document.getElementById('n-cat').value, sev,
+    casa: document.getElementById('n-casa').value,
+    lugar: document.getElementById('n-lugar').value,
+    personas: document.getElementById('n-personas').value,
+    desc, accion: document.getElementById('n-accion').value,
+    guardia: S.guardia
+  });
+  guardar(); renderNovedades(); updateStats();
+  enviarAlServidor('Novedades', S.novedades[S.novedades.length-1]);
+  ['n-desc','n-lugar','n-personas','n-accion'].forEach(id =>
+    document.getElementById(id).value = '');
+  toast('Novedad registrada ['+sev+']');
+}
+
+function renderNovedades() {
+  const tb = document.getElementById('n-table');
+  if(!S.novedades.length) { tb.innerHTML = '<tr class="empty"><td colspan="7">Sin novedades</td></tr>'; return; }
+  tb.innerHTML = [...S.novedades].reverse().map(r => {
+    const sc = r.sev==='Grave'?'ch-grave':r.sev==='Leve'?'ch-leve':'ch-info';
+    return `<tr>
+      <td class="mono">${r.hora}</td>
+      <td>${r.cat}</td>
+      <td><span class="chip ${sc}">${r.sev}</span></td>
+      <td>${r.casa||'—'}</td>
+      <td>${r.lugar||'—'}</td>
+      <td>${r.desc}</td>
+      <td>${r.accion||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── RONDAS ───────────────────────────────────────────────────────────────
+function regRonda() {
+  const areas = document.getElementById('r-areas').value.trim();
+  if(!areas) { alert('Indica las áreas recorridas'); return; }
+  const num = document.getElementById('r-num').value;
+  S.rondas.push({
+    id: Date.now(), num,
+    inicio: document.getElementById('r-inicio').value,
+    fin: document.getElementById('r-fin').value,
+    areas, estado: document.getElementById('r-estado').value,
+    obs: document.getElementById('r-obs').value,
+    guardia: S.guardia
+  });
+  document.getElementById('r-num').value = parseInt(num)+1;
+  guardar(); renderRondas(); updateStats();
+  enviarAlServidor('Rondas', S.rondas[S.rondas.length-1]);
+  document.getElementById('r-areas').value = '';
+  document.getElementById('r-obs').value = '';
+  toast('Ronda #'+num+' registrada');
+}
+
+function renderRondas() {
+  const tb = document.getElementById('r-table');
+  if(!S.rondas.length) { tb.innerHTML = '<tr class="empty"><td colspan="6">Sin rondas</td></tr>'; return; }
+  tb.innerHTML = [...S.rondas].reverse().map(r => `
+    <tr>
+      <td><strong>#${r.num}</strong></td>
+      <td class="mono">${r.inicio}</td>
+      <td class="mono">${r.fin}</td>
+      <td>${r.areas}</td>
+      <td><span class="chip ch-ronda">${r.estado}</span></td>
+      <td>${r.obs||'—'}</td>
+    </tr>`).join('');
+}
+
+// ─── BITÁCORA ─────────────────────────────────────────────────────────────
+function renderBitacora() {
+  const all = [
+    ...S.vehiculos.map(r=>({ hora:r.hora, chip:`<span class="chip ${r.evento==='Entrada'?'ch-entrada':'ch-salida'}">${r.evento}</span>`, unidad:r.casa, detalle:`${r.placa} · ${r.tipo} · ${r.conductor||'—'} · ${r.motivo}`, guardia:r.guardia })),
+    ...S.visitas.map(r=>({ hora:r.hora, chip:`<span class="chip ch-visita">Visita</span>`, unidad:r.casa, detalle:`${r.nombre} (${r.cedula||'—'}) · ${r.evento} · ${r.motivo}`, guardia:r.guardia })),
+    ...S.novedades.map(r=>{ const sc=r.sev==='Grave'?'ch-grave':r.sev==='Leve'?'ch-leve':'ch-info'; return { hora:r.hora, chip:`<span class="chip ${sc}">⚠ ${r.cat}</span>`, unidad:r.casa||'General', detalle:r.desc+(r.accion?' → '+r.accion:''), guardia:r.guardia }; }),
+    ...S.rondas.map(r=>({ hora:r.inicio, chip:`<span class="chip ch-ronda">Ronda #${r.num}</span>`, unidad:'Perímetro', detalle:r.areas+' · '+r.estado, guardia:r.guardia })),
+  ].sort((a,b)=>a.hora.localeCompare(b.hora));
+
+  const tb = document.getElementById('bit-table');
+  if(!all.length) { tb.innerHTML='<tr class="empty"><td colspan="5">Sin eventos del día</td></tr>'; return; }
+  tb.innerHTML = all.map(r=>`
+    <tr>
+      <td class="mono">${r.hora}</td>
+      <td>${r.chip}</td>
+      <td>${r.unidad}</td>
+      <td>${r.detalle}</td>
+      <td>${r.guardia}</td>
+    </tr>`).join('');
+}
+
+// ─── STATS ────────────────────────────────────────────────────────────────
+function updateStats() {
+  document.getElementById('s-v').textContent   = S.vehiculos.length;
+  document.getElementById('s-vis').textContent = S.visitas.length;
+  document.getElementById('s-n').textContent   = S.novedades.length;
+  document.getElementById('s-r').textContent   = S.rondas.length;
+  document.getElementById('tc-v').textContent   = S.vehiculos.length;
+  document.getElementById('tc-vis').textContent = S.visitas.length;
+  document.getElementById('tc-n').textContent   = S.novedades.length;
+  document.getElementById('tc-r').textContent   = S.rondas.length;
+  renderDash();
+}
+
+function renderDash() {
+  const all = [
+    ...S.vehiculos.map(r=>({ hora:r.hora, chip:`<span class="chip ${r.evento==='Entrada'?'ch-entrada':'ch-salida'}">${r.evento}</span>`, unidad:r.casa, detalle:`${r.placa} · ${r.conductor||'—'}`, guardia:r.guardia })),
+    ...S.visitas.map(r=>({ hora:r.hora, chip:`<span class="chip ch-visita">Visita</span>`, unidad:r.casa, detalle:r.nombre, guardia:r.guardia })),
+    ...S.novedades.map(r=>({ hora:r.hora, chip:`<span class="chip ch-novedad">⚠ Novedad</span>`, unidad:r.casa||'—', detalle:r.desc.slice(0,60), guardia:r.guardia })),
+    ...S.rondas.map(r=>({ hora:r.inicio, chip:`<span class="chip ch-ronda">Ronda #${r.num}</span>`, unidad:'Perímetro', detalle:r.areas.slice(0,60), guardia:r.guardia })),
+  ].sort((a,b)=>b.hora.localeCompare(a.hora)).slice(0,10);
+
+  const tb = document.getElementById('dash-table');
+  if(!all.length) { tb.innerHTML='<tr class="empty"><td colspan="5">Sin eventos registrados</td></tr>'; return; }
+  tb.innerHTML = all.map(r=>`
+    <tr>
+      <td class="mono">${r.hora}</td>
+      <td>${r.chip}</td>
+      <td>${r.unidad}</td>
+      <td>${r.detalle}</td>
+      <td>${r.guardia}</td>
+    </tr>`).join('');
+}
+
+function renderAll() {
+  renderVehiculos(); renderVisitas(); renderNovedades(); renderRondas(); updateStats();
+}
+
+// ─── REPORTE ──────────────────────────────────────────────────────────────
+function genTXT() {
+  const fecha = new Date().toLocaleDateString('es-EC',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const hora  = new Date().toLocaleTimeString('es-EC',{hour12:false});
+  const firma = document.getElementById('rep-firma').value || S.guardia;
+  const sup   = document.getElementById('rep-sup').value || '—';
+  const cierre= document.getElementById('rep-cierre').value || '—';
+
+  let t = `
+══════════════════════════════════════════════════════
+    TADESEC · BITÁCORA DIARIA DE SEGURIDAD
+══════════════════════════════════════════════════════
+Conjunto    : TADESEC
+Fecha       : ${fecha}
+Turno       : ${S.turno}
+Guardia     : ${S.guardia}
+Generado    : ${hora}
+══════════════════════════════════════════════════════
+
+RESUMEN DEL TURNO
+  Vehículos registrados : ${S.vehiculos.length}
+  Visitas registradas   : ${S.visitas.length}
+  Novedades             : ${S.novedades.length}
+  Rondas realizadas     : ${S.rondas.length}
+
+══════════════════════════════════════════════════════
+1. VEHÍCULOS (${S.vehiculos.length})
+══════════════════════════════════════════════════════\n`;
+  if(S.vehiculos.length) S.vehiculos.forEach((r,i)=>{
+    t += `  ${i+1}. [${r.hora}] ${r.evento} — ${r.placa} (${r.tipo})\n`;
+    t += `     Conductor: ${r.conductor||'—'} · Unidad: ${r.casa} · ${r.motivo}\n`;
+    if(r.obs) t += `     Obs: ${r.obs}\n`;
+  }); else t += '  Sin registros.\n';
+
+  t += `\n══════════════════════════════════════════════════════
+2. VISITAS (${S.visitas.length})
+══════════════════════════════════════════════════════\n`;
+  if(S.visitas.length) S.visitas.forEach((r,i)=>{
+    t += `  ${i+1}. [${r.hora}] ${r.evento} — ${r.nombre} (C.I.: ${r.cedula||'—'})\n`;
+    t += `     Unidad: ${r.casa} · ${r.empresa||'—'} · ${r.motivo}\n`;
+  }); else t += '  Sin registros.\n';
+
+  t += `\n══════════════════════════════════════════════════════
+3. NOVEDADES E INCIDENTES (${S.novedades.length})
+══════════════════════════════════════════════════════\n`;
+  if(S.novedades.length) S.novedades.forEach((r,i)=>{
+    t += `  ${i+1}. [${r.hora}] [${r.sev.toUpperCase()}] ${r.cat}\n`;
+    t += `     Unidad: ${r.casa||'—'} · Lugar: ${r.lugar||'—'}\n`;
+    t += `     ${r.desc}\n`;
+    if(r.accion) t += `     Acción: ${r.accion}\n`;
+  }); else t += '  Sin novedades.\n';
+
+  t += `\n══════════════════════════════════════════════════════
+4. RONDAS DE VIGILANCIA (${S.rondas.length})
+══════════════════════════════════════════════════════\n`;
+  if(S.rondas.length) S.rondas.forEach(r=>{
+    t += `  Ronda #${r.num}: ${r.inicio} – ${r.fin}\n`;
+    t += `  Áreas: ${r.areas}\n`;
+    t += `  Estado: ${r.estado}\n\n`;
+  }); else t += '  Sin rondas.\n';
+
+  t += `\n══════════════════════════════════════════════════════
+CIERRE DE TURNO
+══════════════════════════════════════════════════════
+Observaciones: ${cierre}
+
+Guardia      : ${firma}
+Supervisor   : ${sup}
+══════════════════════════════════════════════════════\n`;
+  return t;
+}
+
+function preview() {
+  document.getElementById('prev-text').textContent = genTXT();
+  document.getElementById('prev-card').style.display = 'block';
+}
+
+function dlTXT() {
+  const b = new Blob([genTXT()],{type:'text/plain;charset=utf-8'});
+  dl(b, `TADESEC_bitacora_${hoy()}.txt`);
+}
+
+function dlCSV() {
+  const rows = [['fecha','sede','turno','guardia','hora','tipo','subtipo','detalle1','detalle2','obs']];
+  const f = hoy();
+  S.vehiculos.forEach(r=>rows.push([f,'TADESEC',S.turno,r.guardia,r.hora,'VEHICULO',r.evento,r.placa+' '+r.tipo,r.conductor,r.obs]));
+  S.visitas.forEach(r=>rows.push([f,'TADESEC',S.turno,r.guardia,r.hora,'VISITA',r.evento,r.nombre+' '+r.cedula,r.casa,r.motivo]));
+  S.novedades.forEach(r=>rows.push([f,'TADESEC',S.turno,r.guardia,r.hora,'NOVEDAD',r.cat,r.desc,r.accion,r.sev]));
+  S.rondas.forEach(r=>rows.push([f,'TADESEC',S.turno,r.guardia,r.inicio,'RONDA','#'+r.num,r.areas,r.fin,r.estado]));
+  const csv = rows.map(r=>r.map(c=>`"${(c||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
+  const b = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  dl(b, `TADESEC_bitacora_${hoy()}.csv`);
+}
+
+function dl(blob, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name; a.click();
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────
+function toast(msg) {
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.textContent = '✓ ' + msg;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(), 3000);
+}
+</script>
+</body>
+</html>
